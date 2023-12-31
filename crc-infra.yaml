@@ -9,7 +9,7 @@ Parameters:
   S3BucketName:
     Description: "The name of the S3 bucket that will store the static website files"
     Type: String
-    Default: "SAMs-bucket"
+    Default: "SAMs-neheath-bucket"
   WebsiteDomainName:
     Description: "The name of the website this stack will be deployed for"
     Type: String
@@ -174,19 +174,6 @@ Resources:
       Tags:
         CostCenter: !Ref WebsiteDomainName
 
-  # Route53
-  ## Custom Hosted Zone
-  HostedZone: 
-    Type: "AWS::Route53::HostedZone"
-    Properties: 
-      HostedZoneConfig: 
-        Comment: 'portfolio.ne-heath.com hosted zone migrated from main account'
-      Name: !Ref WebsiteDomainName
-      HostedZoneTags: 
-        - 
-          Key: 'CostCenter'
-          Value: !Sub "${WebsiteDomainName}"
-
   ## The main A record to redirect to the CF distribution
   DNSRecordMain:
     Type: AWS::Route53::RecordSet
@@ -197,18 +184,6 @@ Resources:
       AliasTarget:
         DNSName: !GetAtt CloudFrontDistribution.DomainName
         HostedZoneId: Z2FDTNDATAQYW2
-
- 
-  ## Redirect www to the main domain
-  DNSRecordMainWWWredirect:
-    Type: AWS::Route53::RecordSet
-    Properties:
-      Name: !Sub "www.${WebsiteDomainName}"
-      Type: A
-      HostedZoneId: Z00284083DT8WLS19HGXS
-      AliasTarget:
-        DNSName: !Ref WebsiteDomainName
-        HostedZoneId: Z00284083DT8WLS19HGXS
 
 Outputs:
  
