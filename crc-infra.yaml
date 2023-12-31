@@ -9,6 +9,7 @@ Parameters:
   S3BucketName:
     Description: "The name of the S3 bucket that will store the static website files"
     Type: String
+    Default: "SAMs-bucket"
   WebsiteDomainName:
     Description: "The name of the website this stack will be deployed for"
     Type: String
@@ -105,7 +106,7 @@ Resources:
           ViewerProtocolPolicy: redirect-to-https
         PriceClass: PriceClass_100
         ViewerCertificate:
-          AcmCertificateArn: !Ref DomainCertificate
+          AcmCertificateArn: arn:aws:acm:us-east-1:410342199596:certificate/e08958c3-3953-4332-8490-feb8e2712b6d
           SslSupportMethod: sni-only
 
   DDBTable:
@@ -173,35 +174,6 @@ Resources:
       Tags:
         CostCenter: !Ref WebsiteDomainName
 
-  ServerlessRestApiUsagePlan:
-    Type: AWS::ApiGateway::UsagePlan
-    Properties:
-      ApiStages:
-        - ApiId: !Ref ServerlessRestApi
-          Stage: Prod
-      Description: Usage plan of visitor counter API
-      Throttle:
-        BurstLimit: 5
-        RateLimit: 3
-      UsagePlanName: VisitorCounterLimiter
-
-  # ACM Certificate for heyitschris.com
-  DomainCertificate:
-    Type: AWS::CertificateManager::Certificate
-    Properties:
-      DomainName: !Sub "*.${WebsiteDomainName}"
-      SubjectAlternativeNames:
-        - !Ref WebsiteDomainName
-        - !Sub "*.${WebsiteDomainName}"
-      DomainValidationOptions:
-        - DomainName: !Ref WebsiteDomainName
-          ValidationDomain: !Ref WebsiteDomainName
-      ValidationMethod: DNS
-      Tags:
-        - Key: CostCenter
-          Value: !Sub "${WebsiteDomainName}"
-
-  
   # Route53
   ## Custom Hosted Zone
   HostedZone: 
@@ -221,7 +193,7 @@ Resources:
     Properties:
       Name: !Sub "${WebsiteDomainName}"
       Type: A
-      HostedZoneId: !Ref HostedZone
+      HostedZoneId: Z00284083DT8WLS19HGXS
       AliasTarget:
         DNSName: !GetAtt CloudFrontDistribution.DomainName
         HostedZoneId: Z2FDTNDATAQYW2
@@ -233,11 +205,10 @@ Resources:
     Properties:
       Name: !Sub "www.${WebsiteDomainName}"
       Type: A
-      HostedZoneId: !Ref HostedZone
+      HostedZoneId: Z00284083DT8WLS19HGXS
       AliasTarget:
         DNSName: !Ref WebsiteDomainName
-        HostedZoneId: !Ref HostedZone
-
+        HostedZoneId: Z00284083DT8WLS19HGXS
 
 Outputs:
  
