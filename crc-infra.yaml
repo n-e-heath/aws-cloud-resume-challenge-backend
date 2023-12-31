@@ -14,8 +14,7 @@ Parameters:
     Description: "The name of the website this stack will be deployed for"
     Type: String
     Default: "portfolio.ne-heath.com"
-    # ConstraintDescription: Only valid domain names
-    # AllowedPattern: "\/^[a-zA-Z0-9][a-zA-Z0-9-]{1,61}[a-zA-Z0-9]\\.[a-zA-Z]{2,}$"
+
 
 Globals:
   Function:
@@ -70,44 +69,6 @@ Resources:
     Properties: 
       CloudFrontOriginAccessIdentityConfig: 
         Comment: !Sub "The OAI for the bucket: ${S3BucketName}"
-            
-  ## Cloudfront distribution
-  CloudFrontDistribution:
-    Type: AWS::CloudFront::Distribution
-    Properties:
-      DistributionConfig:
-        Origins:
-        - DomainName: !Sub "${S3BucketName}.s3.amazonaws.com"
-          Id: myS3Origin
-          S3OriginConfig:
-            OriginAccessIdentity: !Sub "origin-access-identity/cloudfront/${CloudFrontOAI}"
-        Enabled: 'true'
-        Comment: Static main website distribution
-        DefaultRootObject: index.html
-        Aliases:
-          - !Ref WebsiteDomainName
-          - !Sub "www.${WebsiteDomainName}"
-        DefaultCacheBehavior:
-          DefaultTTL: 0
-          MinTTL: 0
-          MaxTTL: 0
-          Compress: true
-          AllowedMethods:
-            - HEAD
-            - GET
-            - OPTIONS
-          CachedMethods:
-            - HEAD
-            - GET
-            - OPTIONS
-          TargetOriginId: myS3Origin
-          ForwardedValues:
-            QueryString: 'false'
-          ViewerProtocolPolicy: redirect-to-https
-        PriceClass: PriceClass_100
-        ViewerCertificate:
-          AcmCertificateArn: arn:aws:acm:us-east-1:410342199596:certificate/e08958c3-3953-4332-8490-feb8e2712b6d
-          SslSupportMethod: sni-only
 
   DDBTable:
     Type: AWS::Serverless::SimpleTable
@@ -118,7 +79,6 @@ Resources:
       Tags:
         CostCenter: !Ref WebsiteDomainName
   
-  ### FIXME can replace with SAM policy templates, see below
   ## Lambda role to access visitorCount in DynamoDB
   VisitorCounterFunctionRole:
     Type: AWS::IAM::Role
@@ -166,24 +126,9 @@ Resources:
           Properties:
             Path: /visitorCount
             Method: get
-      # This is the preferred way. I'd need to modify my deploy role's permissions however
-      # Which I am not in the mood for right now. Maybe later
-      # Policies:
-      #   - DynamoDBCrudPolicy:
-      #       TableName: !Ref DDBTable
       Tags:
         CostCenter: !Ref WebsiteDomainName
 
-  ## The main A record to redirect to the CF distribution
-  DNSRecordMain:
-    Type: AWS::Route53::RecordSet
-    Properties:
-      Name: !Sub "${WebsiteDomainName}"
-      Type: A
-      HostedZoneId: Z00284083DT8WLS19HGXS
-      AliasTarget:
-        DNSName: !GetAtt CloudFrontDistribution.DomainName
-        HostedZoneId: Z2FDTNDATAQYW2
 
 Outputs:
  
