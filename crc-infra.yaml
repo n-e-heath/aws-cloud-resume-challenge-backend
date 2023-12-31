@@ -9,7 +9,7 @@ Parameters:
   S3BucketName:
     Description: "The name of the S3 bucket that will store the static website files"
     Type: String
-    Default: "SAMs-neheath-bucket"
+    Default: "sams-neheath-bucket"
   WebsiteDomainName:
     Description: "The name of the website this stack will be deployed for"
     Type: String
